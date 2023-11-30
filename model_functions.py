@@ -26,8 +26,7 @@ import joblib
         - model_bib     - bib detection model trained on custom dataset 
         - model_people  - pretrained model focusing on 'person' class
         - model_gender  - gender classification model trained on custom dataset
-
-
+        - model_number  - pretrained number classification model from exercise 5
     
     #### NOTE: you will have to change the file path to the model below to wherever the best weights saved on your computer. 
 '''
@@ -42,6 +41,9 @@ model_people.classes = ['person']
 
 # Load the Resnet50 gender classification model
 model_gender = joblib.load('gender_classifier_resnet50.pkl')
+
+# Load the VGG16 number classification model
+model_number = joblib.load('number_classifier_vgg16.pkl')
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
