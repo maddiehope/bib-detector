@@ -9,4 +9,4 @@ roboflow:
   workspace: university-of-georgia-k4dwo
 test: /Users/maddiehope/Desktop/bib-detector/Bib-Detection--1/test
 train: /Users/maddiehope/Desktop/bib-detector/Bib-Detection--1/train
-val:
+val: null
