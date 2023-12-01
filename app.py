@@ -35,11 +35,6 @@ CORS(app)
 @app.route('/', methods=['GET'])
 def home():
 
-    ### TEST ###
-    loaded_model = joblib.load('number_classifier_vgg16.pkl')
-    print(type(loaded_model))
-    ############
-
     return render_template("home.html",title="Home") 
 
 
@@ -48,6 +43,6 @@ def home():
 if __name__ == '__main__':
     app.debug = True
     app.run()
-    
+
 #if __name__ == "__main__":
     #app.run(debug=True, port=8080) # can be commented out when deployed
