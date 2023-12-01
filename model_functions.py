@@ -40,10 +40,10 @@ model_people = YOLO('yolov8n.pt') # pretrained YOLOv8n model
 model_people.classes = ['person']
 
 # Load the Resnet50 gender classification model
-model_gender = joblib.load('gender_classifier_resnet50.pkl')
+model_gender = joblib.load('/Users/maddiehope/Desktop/gender_classifier_resnet50.pkl') #### change file path here
 
 # Load the VGG16 number classification model
-model_number = joblib.load('/Users/maddiehope/Desktop/INFO 4000/5exercise/number_classifier_vgg16.pkl') #### change file path here
+model_number = joblib.load('/Users/maddiehope/Desktop/number_classifier_vgg16.pkl') #### change file path here
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
