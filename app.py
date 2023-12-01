@@ -36,7 +36,7 @@ CORS(app)
 def home():
 
     ### TEST ###
-    loaded_model = joblib.load('/Users/maddiehope/Desktop/INFO 4000/5exercise/number_classifier_vgg16.pkl')
+    loaded_model = joblib.load('number_classifier_vgg16.pkl')
     print(type(loaded_model))
     ############
 
