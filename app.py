@@ -46,4 +46,4 @@ def home():
 # ----------------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000) # can be commented out when deployed
+    app.run(debug=True, port=8080) # can be commented out when deployed
