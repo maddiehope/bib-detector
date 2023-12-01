@@ -28,7 +28,7 @@ import joblib
         - model_gender  - gender classification model trained on custom dataset
         - model_number  - pretrained number classification model from exercise 5
     
-    #### NOTE: you will have to change the file path to the model below to wherever the best weights saved on your computer. 
+    #### NOTE: you will have to change the file path to the model below to wherever the best weights/model are saved on your computer. 
 '''
 
 # Load the YOLO bib detection model
@@ -43,7 +43,7 @@ model_people.classes = ['person']
 model_gender = joblib.load('gender_classifier_resnet50.pkl')
 
 # Load the VGG16 number classification model
-model_number = joblib.load('number_classifier_vgg16.pkl')
+model_number = joblib.load('/Users/maddiehope/Desktop/INFO 4000/5exercise/number_classifier_vgg16.pkl') #### change file path here
 
 # ----------------------------------------------------------------------------------------------------------------------------
 

@@ -1,8 +1,15 @@
 '''
     BIB DETECTION FLASK APP
+    https://bib-detector.dynv6.net
+    -----------------------
 
     Oracle Cloud instance: instance-20231130-1131
-    
+    Public IP Address: 150.136.10.94
+
+    Logging in:
+        IP adress: ssh -i ../Desktop/ssh-key-2023-11-30.key ubuntu@150.136.10.94
+        Domain: ssh -i ../Desktop/ssh-key-2023-11-30.key ubuntu@bib-detector.dynv6.net
+
 '''
 
 # IMPORTS: -------------------------------------------------------------------------------------------------------------------
@@ -14,6 +21,7 @@ import pandas as pd
 from flask_cors import CORS
 import sqlite3
 import os
+import joblib
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
@@ -25,7 +33,13 @@ CORS(app)
 
 # "Home" page, route "/"
 @app.route('/', methods=['GET'])
-def selection():
+def home():
+
+    ### TEST ###
+    loaded_model = joblib.load('/Users/maddiehope/Desktop/INFO 4000/5exercise/number_classifier_vgg16.pkl')
+    print(type(loaded_model))
+    ############
+
     return render_template("home.html",title="Home") 
 
 
