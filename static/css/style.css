@@ -18,17 +18,58 @@ header {
     padding: 10px;
   }
 
-  .confusion-matrix {
-    border-collapse: collapse;
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 20vh; /* Adjust this value if needed */
+    margin-top: 20px; /* Minimal margin from the top */
+    margin-bottom: 20px; /* Minimal margin from the bottom */
 }
 
-.confusion-matrix th, .confusion-matrix td {
-    border: 1px solid black;
-    padding: 5px;
+
+  input[type="file"] {
+    display: none; /* hiding defualt input */
+}
+
+  label.upload-btn { /* for file uploads */
+    background-color: #ff0000c8;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+  button.upload-btn { /* for submitting form */
+  background-color: #ff0000c8;
+  color: white;
+  padding: 8px 12px; 
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 15px; 
+}
+
+
+  span.file-name {
+  margin-top: 10px;
+  font-style: italic;
+}
+
+  input[type="text"] {
+      margin-top: 15px;
+  }
+
+  body {
+      padding: 10px;
+  }
+
+  .intro-section {
     text-align: center;
+    margin-top: 20px;
 }
-
-
 
 footer {
     background-color: #ff0000c8;

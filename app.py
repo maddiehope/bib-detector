@@ -23,6 +23,8 @@ from flask_mail import Mail, Message
 import sqlite3
 import os
 import joblib
+import sys
+import socket
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
@@ -31,28 +33,33 @@ import joblib
 # creating the Flask 
 app = Flask(__name__, template_folder='templates')
 CORS(app)
-mail = Mail(app)
 
 # configuring email settings
-import config # private file containing email & password information
+sys.path.append('/Users/maddiehope/Desktop')       # this is where my private file containing email & password information is located                  
+import config                               # if you want to run this application locally, you can conifgure a file with your own email info
 
-app.config['MAIL_SERVER'] = 'https://bib-detector.dynv6.net'
-app.config['MAIL_PORT'] = 587
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 547
 app.config['MAIL_USERNAME'] = config.email
 app.config['MAIL_PASSWORD'] = config.password
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
+mail = Mail(app)
+
 # function to send user email of the prediction results
-def send_email(receiver_email, subject, body, attachment_path):
+def send_email(receiver_email, subject, body): #, attachment_path
    
    message = Message(subject, sender=config.email, recipients=[receiver_email])
    message.body = body
 
+   '''
    with app.open_resource(attachment_path) as attachment:
       message.attach(attachment_path, 'text/csv', attachment.read())
+   '''
 
    mail.send(message)
+   return("Message sent successfully.")
 
 # "Home" page, route "/"
 @app.route('/', methods=['GET'])
@@ -69,10 +76,10 @@ def upload():
     '''
 
     f = request.files['file']
-    email = request.form['email']
+    email = str(request.form['email'])
     f.save(os.path.join('uploads', f.filename))
 
-    send_email(email, 'Your Bib Prediction Results', 'Please find the attached CSV file with your video prediction results.', 'test.csv') # test.csv is temporary
+    send_email(email, 'Your Bib Prediction Results', 'Please find the attached CSV file with your video prediction results.') #, 'test.csv'# test.csv is temporary
 
     return render_template("results.html", title="Results")
 

@@ -1,12 +1,53 @@
 {% extends "base.html" %}
 {% block content %}
+
+<div class="intro-section">
+    <h3>Welcome to Bib Detector</h3>
+    <p>
+        Bib Detector is an application designed to streamline the process of analyzing race finishes.
+        Upload a video of race finishes, and Bib Detector will generate a CSV file sent to your email,
+        containing finishers listed by their bib number and gender. 
+
+    </p>
+</div>
+
 <form action="/upload" method="post" enctype = "multipart/form-data">
 
-    <input type = "file" name = "file" />
-    <input type = "text" name = "email" placeholder = "Enter email" />
-    <input type = "submit"/>
+
+    <label for="file" class="upload-btn">Choose File</label>
+
+    <input type="file" name="file" id="file" onchange="displayFileName(this)" required/>
+
+    <span class="file-name" id="file-name"></span>
+
+    <input type="text" name="email" placeholder="Enter email" autocomplete="off" required/>
+    
+    <button type="submit" class="upload-btn">Upload</button>
+
 
  </form>
+
+ <p>
+<div class="intro-section">
+    <p>
+        Bib Detector was created as a project for Informatics 4000. 
+        It combines YOLOv8n, YOLOS, ResNet50, and VGG16 models for object detection and image classification.
+        The GitHub for this project can be found <a href="https://github.com/maddiehope/bib-detector">here</a>. 
+    </p>
+</div>
+
     
-</form>
+ <script>
+
+    document.getElementById("file-name").innerText = "Please select a file."; // JavaScript function to display text when no file is selected
+
+    // JavaScript function to display the selected file name
+    function displayFileName(input) {
+        var fileName = input.files[0].name;
+
+        document.getElementById("file-name").innerText = "Selected File: " + fileName;
+
+    }
+</script>
+
 {% endblock content %}
