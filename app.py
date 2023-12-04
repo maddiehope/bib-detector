@@ -15,16 +15,12 @@
 # IMPORTS: -------------------------------------------------------------------------------------------------------------------
 
 from flask import Flask, render_template, request
-from werkzeug.utils import secure_filename
-import requests
 import pandas as pd
 from flask_cors import CORS
 from flask_mail import Mail, Message
-import sqlite3
 import os
 import joblib
 import sys
-import socket
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
@@ -36,10 +32,10 @@ CORS(app)
 
 # configuring email settings
 sys.path.append('/Users/maddiehope/Desktop')       # this is where my private file containing email & password information is located                  
-import config                               # if you want to run this application locally, you can conifgure a file with your own email info
+import config                                      # if you want to run this application locally, you can conifgure a file with your own email info
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 547
+app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = config.email
 app.config['MAIL_PASSWORD'] = config.password
 app.config['MAIL_USE_TLS'] = True
