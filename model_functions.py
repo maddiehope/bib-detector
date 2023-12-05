@@ -16,6 +16,19 @@ from torchvision import transforms
 import torch
 import joblib
 
+import sys
+sys.path.append('/Users/maddiehope/Library/Python/3.8/lib/python/site-packages')
+import pytesseract
+from PIL import ImageEnhance, ImageFilter
+from deskew import determine_skew
+import imutils
+import cv2
+
+from openpyxl import Workbook
+from openpyxl.drawing.image import Image as Img
+import base64
+from io import BytesIO
+
 # ----------------------------------------------------------------------------------------------------------------------------
 
 # MODEL INITIALIZATION: ------------------------------------------------------------------------------------------------------
@@ -26,7 +39,6 @@ import joblib
         - model_bib     - bib detection model trained on custom dataset 
         - model_people  - pretrained model focusing on 'person' class
         - model_gender  - gender classification model trained on custom dataset
-        - model_number  - pretrained number classification model from exercise 5
     
     #### NOTE: you will have to change the file path to the model below to wherever the best weights/model are saved on your computer. 
 '''
@@ -41,9 +53,6 @@ model_people.classes = ['person']
 
 # Load the Resnet50 gender classification model
 model_gender = joblib.load('gender_classifier_resnet50.pkl')
-
-# Load the VGG16 number classification model
-model_number = joblib.load('number_classifier_vgg16.pkl') 
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
@@ -164,4 +173,135 @@ def gender_predictions(loaded_model, people_list):
 
     return gender_list
 
+# BIB IMAGE PRE-PROCESSING FUNCTIONS ------------------
+def deskew(image, angle):
+    '''
+        This function helps adjusts the image according to the determined skew angle as apart of the image pre-processing for optimal
+        OCR results. 
+    '''
+    non_zero_pixels = cv2.findNonZero(cv2.bitwise_not(image))
+    center, wh, theta = cv2.minAreaRect(non_zero_pixels)
+
+    root_mat = cv2.getRotationMatrix2D(center, angle, 1)
+    rows, cols = image.shape
+    rotated = cv2.warpAffine(image, root_mat, (cols, rows), flags=cv2.INTER_CUBIC)
+
+    return rotated
+def crop_dark_regions(image):
+    '''
+        This function removes the border of the image. A dark border can skew characterizations. 
+    '''
+    mask = np.zeros(image.shape, dtype=np.uint8)
+
+    cnts = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
+    cv2.fillPoly(mask, cnts, [255,255,255])
+    mask = 255 - mask
+    result = cv2.bitwise_or(image, mask)
+
+    return result
+# -----------------------------------------------------
+
+# gender predicition pipeline 
+def number_detect(bibs_list):
+    '''
+        Just like with bibs_list and people_list, nums_list will share matching indicies with the bib it gets the numbers for.
+        If the detected characters are valid numbers, they will be added to the list. If they are not, 'None' will be passed as a placeholder
+    '''
+
+    nums_list = []
+    for i in range(len(bibs_list)):
+
+        img = bibs_list[i]
+
+        img = np.array(img) # need cv image for next couple of steps
+        img = imutils.resize(img, width=300) 
+
+        # Deskewking image 
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        angle = determine_skew(img)
+        img = deskew(img, angle)
+        
+        # Cropping dark edges from deskewing
+        img = cv2.bilateralFilter(img, 11, 17, 17)
+        img = crop_dark_regions(img)
+        img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)) # converting back to PIL
+
+        # Various photo editing
+        img = img.filter(ImageFilter.GaussianBlur(radius=1)) # apply gaussian blur (noise removal)
+        brightness = ImageEnhance.Brightness(img)
+        img = brightness.enhance(1.5)  #increase brightness by 150%
+        contrast = ImageEnhance.Contrast(img)
+        img = contrast.enhance(2.0) # increase contrast by 200%
+
+        pytesseract.pytesseract.tesseract_cmd = r'/usr/local/Cellar/tesseract/5.3.3/bin/tesseract' # Provide the path to the Tesseract executable
+        
+        nums = pytesseract.image_to_string(img, config='--psm 7 digits') # PSM 7 is used for a single line, digits used for numbers
+
+        # Criteria to determine if the nums should be added 
+        nums = nums.replace('.', '')
+        nums = nums.replace('-','')
+        nums = nums.strip()
+        
+        if nums == '':
+            nums = None
+
+        nums_list.append(nums)
+
+        
+    return(nums_list)
+
+# ----------------------------------------------------------------------------------------------------------------------------
+
+# CREATE CSV RESULTS: --------------------------------------------------------------------------------------------------------
+
+# Convert the images to base64 strings
+def image_to_base64(pil_img):
+    buffered = BytesIO()
+    pil_img.save(buffered, format="JPEG")
+    img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+    return img_str
+
+def create_excel(gender_list, bibs_list, nums_list):
+    wb = Workbook()
+    man_sheet = wb.active
+    man_sheet.title = "Man"
+    woman_sheet = wb.create_sheet("Woman")
+
+    man_sheet.append(['Bib Images', 'Recognized Bib Numbers'])
+    woman_sheet.append(['Bib Images', 'Recognized Bib Numbers'])
+
+    man_index = 0
+    woman_index = 0
+
+    for i, img in enumerate(bibs_list):
+        img_str = image_to_base64(img)
+        img_data = base64.b64decode(img_str)
+        img = BytesIO(img_data)
+        img_pil = Image.open(img)
+
+        if gender_list[i] == 'man':
+            man_sheet.add_image(Img(img_pil), f'A{man_index+2}')
+            man_sheet.row_dimensions[man_index+2].height = img_pil.height
+            man_sheet.column_dimensions['A'].width = img_pil.width
+
+        elif gender_list[i] == 'woman':
+            woman_sheet.add_image(Img(img_pil), f'A{woman_index+2}')
+            woman_sheet.row_dimensions[woman_index+2].height = img_pil.height
+            woman_sheet.column_dimensions['A'].width = img_pil.width
+
+        if gender_list[i] == 'man':
+            man_sheet.cell(row=man_index+2, column=3, value=nums_list[man_index])
+            man_index+=1
+
+        elif gender_list[i] == 'woman':
+            woman_sheet.cell(row=woman_index+2, column=3, value=nums_list[woman_index])
+            woman_index+=1
+
+    wb.save('results.xlsx')
+
+# ----------------------------------------------------------------------------------------------------------------------------
+
+# MASTER PIPELINE: -----------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------------
