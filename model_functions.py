@@ -268,6 +268,26 @@ def image_to_base64(pil_img):
     return img_str
 
 def create_excel(gender_list, bibs_list, nums_list, email):
+
+    data = {
+
+            'Gender':gender_list,
+            'Bib Images':bibs_list,
+            'Recognized Bib Numbers': nums_list
+            }
+
+    df = pd.DataFrame(data)
+
+    df = df[~df.duplicated(subset='Recognized Bib Numbers', keep=False)]
+
+    gender_list = df['Gender'].tolist()
+    bibs_list = df['Bib Images'].tolist()
+    nums_list = df['Recognized Bib Numbers'].tolist()
+
+    gender_list = [None if pd.isna(x) else x for x in gender_list]
+    bibs_list = [None if pd.isna(x) else x for x in bibs_list]
+    nums_list = [None if pd.isna(x) else x for x in nums_list]
+    
     wb = Workbook()
     man_sheet = wb.active
     man_sheet.title = "Man"
