@@ -1,6 +1,6 @@
 '''
     BIB DETECTION FLASK APP
-    https://bib-detector.dynv6.net
+    https://app.bib-detector.dynv6.net
     -----------------------
 
     Oracle Cloud instance: instance-20231130-1131
@@ -80,7 +80,7 @@ def upload():
         # Error email
         send_email(email, 
                    'Error in Bib Prediction Results', 
-                   'The file you submitted was not the correct type. Please try again with a .mp4 or .mov file.', "") # add link
+                   'The file you submitted was not the correct type. Please try again with a .mp4 or .mov file at https://app.bib-detector.dynv6.net.', "") # add link
 
     else:
         send_email(email, 
