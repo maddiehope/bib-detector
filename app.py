@@ -14,6 +14,9 @@
 
 # IMPORTS: -------------------------------------------------------------------------------------------------------------------
 
+import sys
+sys.path.append('/Users/maddiehope/Library/Python/3.8/lib/python/site-packages') #### change file path here
+
 from flask import Flask, render_template, request
 import pandas as pd
 from flask_cors import CORS
@@ -21,6 +24,8 @@ from flask_mail import Mail, Message
 import os
 import joblib
 import sys
+
+import model_functions # most important import :)
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
@@ -44,16 +49,15 @@ app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
 
 # function to send user email of the prediction results
-def send_email(receiver_email, subject, body): #, attachment_path
+def send_email(receiver_email, subject, body, attachment_path):
    
    message = Message(subject, sender=config.email, recipients=[receiver_email])
    message.body = body
-
-   '''
-   with app.open_resource(attachment_path) as attachment:
-      message.attach(attachment_path, 'text/csv', attachment.read())
-   '''
-
+   
+   if attachment_path != "":
+    with app.open_resource(attachment_path) as attachment:
+        message.attach(attachment_path, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', attachment.read())
+   
    mail.send(message)
    return("Message sent successfully.")
 
@@ -67,15 +71,28 @@ def home():
 @app.route('/upload', methods=['POST'])
 def upload():
 
-    '''
-        This is where the code that makes predictions will go.
-    '''
-
     f = request.files['file']
     email = str(request.form['email'])
     f.save(os.path.join('uploads', f.filename))
 
-    send_email(email, 'Your Bib Prediction Results', 'Please find the attached CSV file with your video prediction results.') #, 'test.csv'# test.csv is temporary
+    # Checking file type
+    if (f.filename[-4:].lower() != '.mp4') and (f.filename[-4:].lower() != '.mov'):
+        # Error email
+        send_email(email, 
+                   'Error in Bib Prediction Results', 
+                   'The file you submitted was not the correct type. Please try again with a .mp4 or .mov file.', "") # add link
+
+    else:
+        send_email(email, 
+                   'Your Bib Prediction Results', 
+                   'Please find the attached CSV file with your video prediction results.',
+                   f'results/{email}_results.xlsx') 
+
+        # Passing file upload to prediction model
+
+
+    #model_functions.master()
+
 
     return render_template("results.html", title="Results")
 

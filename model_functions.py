@@ -10,14 +10,13 @@ bib-detector.ipynb notebook and the designated file paths must be changed prior 
 # IMPORTS: -------------------------------------------------------------------------------------------------------------------
 
 import pandas as pd
+import numpy as np
 from ultralytics import YOLO
 from PIL import Image
 from torchvision import transforms
 import torch
 import joblib
 
-import sys
-sys.path.append('/Users/maddiehope/Library/Python/3.8/lib/python/site-packages')
 import pytesseract
 from PIL import ImageEnhance, ImageFilter
 from deskew import determine_skew
@@ -78,7 +77,10 @@ def prediction_pipeline(image):
     # Convert the input image path back to an actual image
     # (needed for person cropping and image detection in bib model)
 
-    im = Image.open(image) # Open image using PIL
+    if isinstance(image, str): # if image is path 
+        im = Image.open(image) # Open image using PIL
+    else:
+        im = image
 
     # If the image has an alpha channel (transparency), convert it to RGB
     if im.mode == 'RGBA':
@@ -235,7 +237,7 @@ def number_detect(bibs_list):
         contrast = ImageEnhance.Contrast(img)
         img = contrast.enhance(2.0) # increase contrast by 200%
 
-        pytesseract.pytesseract.tesseract_cmd = r'/usr/local/Cellar/tesseract/5.3.3/bin/tesseract' # Provide the path to the Tesseract executable
+        pytesseract.pytesseract.tesseract_cmd = r'/usr/local/Cellar/tesseract/5.3.3/bin/tesseract' #### change file path here
         
         nums = pytesseract.image_to_string(img, config='--psm 7 digits') # PSM 7 is used for a single line, digits used for numbers
 
@@ -263,7 +265,7 @@ def image_to_base64(pil_img):
     img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
     return img_str
 
-def create_excel(gender_list, bibs_list, nums_list):
+def create_excel(gender_list, bibs_list, nums_list, email):
     wb = Workbook()
     man_sheet = wb.active
     man_sheet.title = "Man"
@@ -299,9 +301,40 @@ def create_excel(gender_list, bibs_list, nums_list):
             woman_sheet.cell(row=woman_index+2, column=3, value=nums_list[woman_index])
             woman_index+=1
 
-    wb.save('results.xlsx')
+    wb.save(f"results/{email}_results.xlsx")
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
 # MASTER PIPELINE: -----------------------------------------------------------------------------------------------------------
+
+# Converting PIL objects to base64 strings and remove duplicates -
+# doing this so that if the same person is detected in multiple frames, only one instance is kept.
+# Taking only every 4th frame should help prevent SOME of this, but there will still be duplicates.
+def remove_duplicates(people_list, bibs_list):
+    unique_people = []
+    unique_bibs = []
+    seen = set()
+    for i in range(len(people_list)):
+        img_str = image_to_base64(people_list[i])
+        if img_str not in seen:
+            unique_people.append(people_list[i])
+            unique_bibs.append(bibs_list[i])
+            seen.add(img_str)
+    return unique_people, unique_bibs
+
+def master(pil_images, email):
+    '''
+        Takes a list of PIL images and runs all of the prediction models of them.
+        Results in a spreadsheet of detected bibs. 
+    '''
+
+    people_list, bibs_list = multiple_predicition_pipeline(pil_images) # object detection for the people and bibs in the frames
+    people_list, bibs_list = remove_duplicates(people_list, bibs_list) # removing duplicates 
+
+    gender_list = gender_predictions(model_gender, people_list) # classification for gender of people
+
+    nums_list = number_detect(bibs_list) # OCR on images on bibs
+
+    create_excel(gender_list, bibs_list, nums_list, email) # creating excel of all this data 
+
 # ----------------------------------------------------------------------------------------------------------------------------
