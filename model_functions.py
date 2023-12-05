@@ -43,7 +43,7 @@ from io import BytesIO
 '''
 
 # Load the YOLO bib detection model
-model_bib = YOLO("/Users/maddiehope/runs/detect/train15/weights/best.pt") #### change file path here 
+model_bib = YOLO("best.pt") #### change file path here 
 
 # Load the YOLO people model
 model_people = YOLO('yolov8n.pt') # pretrained YOLOv8n model
@@ -205,15 +205,17 @@ def crop_dark_regions(image):
     return result
 # -----------------------------------------------------
 
-# gender predicition pipeline 
-def number_detect(bibs_list):
+def number_detect(bibs_list, gender_list):
     '''
-        Just like with bibs_list and people_list, nums_list will share matching indicies with the bib it gets the numbers for.
-        If the detected characters are valid numbers, they will be added to the list. If they are not, 'None' will be passed as a placeholder
+
+    Just like with bibs_list and people_list, nums_list will share matching indicies with the bib it gets the numbers for.
+
+    If the detected characters are valid numbers, they will be added to the list. If they are not, 'None' will be passed as a placeholder
+
     '''
 
     nums_list = []
-    for i in range(len(bibs_list)):
+    for i, img in enumerate(bibs_list):
 
         img = bibs_list[i]
 
@@ -237,7 +239,7 @@ def number_detect(bibs_list):
         contrast = ImageEnhance.Contrast(img)
         img = contrast.enhance(2.0) # increase contrast by 200%
 
-        pytesseract.pytesseract.tesseract_cmd = r'/usr/local/Cellar/tesseract/5.3.3/bin/tesseract' #### change file path here
+        pytesseract.pytesseract.tesseract_cmd = r'/usr/local/Cellar/tesseract/5.3.3/bin/tesseract' # Provide the path to the Tesseract executable
         
         nums = pytesseract.image_to_string(img, config='--psm 7 digits') # PSM 7 is used for a single line, digits used for numbers
 
@@ -249,10 +251,14 @@ def number_detect(bibs_list):
         if nums == '':
             nums = None
 
-        nums_list.append(nums)
+        if nums not in nums_list: 
+            nums_list.append(nums)
+        else:
+            del bibs_list[i]
+            del gender_list[i]
 
         
-    return(nums_list)
+    return(bibs_list, gender_list, nums_list)
 
 # ----------------------------------------------------------------------------------------------------------------------------
 
@@ -322,6 +328,8 @@ def remove_duplicates(people_list, bibs_list):
             seen.add(img_str)
     return unique_people, unique_bibs
 
+# MASTER PIPELINE 
+
 def master(pil_images, email):
     '''
         Takes a list of PIL images and runs all of the prediction models of them.
@@ -333,7 +341,7 @@ def master(pil_images, email):
 
     gender_list = gender_predictions(model_gender, people_list) # classification for gender of people
 
-    nums_list = number_detect(bibs_list) # OCR on images on bibs
+    bibs_list, gender_list, nums_list = number_detect(bibs_list, gender_list) # OCR on images on bibs
 
     create_excel(gender_list, bibs_list, nums_list, email) # creating excel of all this data 
 
