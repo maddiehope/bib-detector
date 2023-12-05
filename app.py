@@ -77,21 +77,21 @@ def upload():
 
     # Checking file type
     if (f.filename[-4:].lower() != '.mp4') and (f.filename[-4:].lower() != '.mov'):
-        # Error email
         send_email(email, 
-                   'Error in Bib Prediction Results', 
+                   'Error in Bib Prediction Results', # Error email
                    'The file you submitted was not the correct type. Please try again with a .mp4 or .mov file at https://app.bib-detector.dynv6.net.', "") # add link
 
     else:
+
+        # Passing file upload to prediction model
+        frames = model_functions.get_frames(f'uploads/{f.filename}')
+        model_functions.master(frames, email) # will create an excel sheet automatically
+
         send_email(email, 
-                   'Your Bib Prediction Results', 
+                   'Your Bib Prediction Results', # Success email
                    'Please find the attached CSV file with your video prediction results.',
                    f'results/{email}_results.xlsx') 
 
-        # Passing file upload to prediction model
-
-
-    #model_functions.master()
 
 
     return render_template("results.html", title="Results")

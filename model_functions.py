@@ -251,11 +251,7 @@ def number_detect(bibs_list, gender_list):
         if nums == '':
             nums = None
 
-        if nums not in nums_list: 
-            nums_list.append(nums)
-        else:
-            del bibs_list[i]
-            del gender_list[i]
+        nums_list.append(nums)
 
         
     return(bibs_list, gender_list, nums_list)
@@ -312,6 +308,27 @@ def create_excel(gender_list, bibs_list, nums_list, email):
 # ----------------------------------------------------------------------------------------------------------------------------
 
 # MASTER PIPELINE: -----------------------------------------------------------------------------------------------------------
+
+# Video upload pre-processing 
+def get_frames(video_path):
+
+    cap = cv2.VideoCapture(video_path) # opening video file
+    frame_list = []
+    count = 0
+
+    # looping through the video frames
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        if count % 4 == 0:  # taking every 4th frame so reduce time processing takes 
+            frame_list.append(frame)
+        count += 1
+
+    cap.release()
+
+    return frame_list
+
 
 # Converting PIL objects to base64 strings and remove duplicates -
 # doing this so that if the same person is detected in multiple frames, only one instance is kept.
