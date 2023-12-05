@@ -43,6 +43,7 @@ Oracle Cloud is the server for my application and it can be accessed via the lin
 
 ### Future Improvements
 
+- My Oracle Cloud server has limited capabilies and thus large files are not accomadated as uploads. I already paid for increased storage so this issue is kind of a brick wall. All of my functions are tested in 'bib-detector.ipynb' and work perfectly, there is just red tape when trying to upload them through the flask app. I hope to resolve this so that users can actually use my application via the domain.
 - One big issue is that the gender classification model tends to make a lot of incorrect predicitions on women. This probably has to do with the fact that the pictures the model is being used on are of athletes running, while it was trained on regular images of men and women (mostly snapshots from TV/smiling for pictures). In the future, a more specific dataset to this application could be curated.
 - Another major improvement that can be made is the OCR accuracy. It was difficult for me to fine tune the image pre-processing, and I will look into more ways the recognition abilities can be improved.
 - My webpage styling was not the best, but this is becuase I have not had a ton of experience with html/css. Hopefully one day I can go back and make everything look nicer on the front end. 
