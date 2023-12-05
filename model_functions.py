@@ -43,7 +43,7 @@ from io import BytesIO
 '''
 
 # Load the YOLO bib detection model
-model_bib = YOLO("best.pt") #### change file path here 
+model_bib = YOLO("best.pt") 
 
 # Load the YOLO people model
 model_people = YOLO('yolov8n.pt') # pretrained YOLOv8n model

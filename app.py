@@ -36,7 +36,7 @@ app = Flask(__name__, template_folder='templates')
 CORS(app)
 
 # configuring email settings
-sys.path.append('/Users/maddiehope/Desktop')       # this is where my private file containing email & password information is located                  
+sys.path.append('..')       # this is where my private file containing email & password information is located                  
 import config                                      # if you want to run this application locally, you can conifgure a file with your own email info
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
